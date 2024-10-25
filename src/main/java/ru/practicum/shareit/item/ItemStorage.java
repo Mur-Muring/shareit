@@ -17,6 +17,4 @@ public interface ItemStorage {
     void deleteItem(Long id);
 
     List<Item> searchItem(String searchString);
-
-    Long getNextId();
 }

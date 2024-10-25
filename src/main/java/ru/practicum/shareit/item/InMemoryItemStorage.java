@@ -7,10 +7,7 @@ import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Repository
 @AllArgsConstructor
@@ -18,6 +15,7 @@ import java.util.stream.Collectors;
 public class InMemoryItemStorage implements ItemStorage {
 
     private final Map<Long, Item> items;
+    private final Map<Long, List<Item>> itemsList;
 
 
     @Override
@@ -28,16 +26,16 @@ public class InMemoryItemStorage implements ItemStorage {
     @Override
     public List<Item> getUserItem(Long id) {
         log.info("Getting user item with id {}", id);
-        return items.values().stream()
-                .filter(item -> Objects.equals(item.getOwner().getId(), id))
-                .collect(Collectors.toList());
+        return itemsList.getOrDefault(id, new ArrayList<>());
     }
 
     @Override
     public Item createItem(Item item) {
         log.info("Creating new item {}", item);
-        item.setId(getNextId());
-        items.put(item.getId(), item);
+        Long itemId = getNextId();
+        item.setId(itemId);
+        items.put(itemId, item);
+        itemsList.computeIfAbsent(item.getOwner().getId(), k -> new ArrayList<>()).add(item);
         return item;
     }
 
@@ -53,9 +51,12 @@ public class InMemoryItemStorage implements ItemStorage {
                 oldItem.setDescription(itemDto.getDescription());
             }
             if (itemDto.getAvailable() != null) {
-                oldItem.setAvailable(Boolean.parseBoolean(itemDto.getAvailable()));
+                oldItem.setAvailable(itemDto.getAvailable());
             }
             items.put(oldItem.getId(), oldItem);
+            List<Item> itemNewList = itemsList.get(oldItem.getOwner().getId());
+            itemNewList.add(oldItem);
+
             return oldItem;
         }
         throw new NotFoundException("Item not found");
@@ -67,7 +68,14 @@ public class InMemoryItemStorage implements ItemStorage {
         if (!items.containsKey(id)) {
             throw new NotFoundException("Item not found");
         }
-        items.remove(id);
+        Item item = items.remove(id);
+        List<Item> itemNewList = itemsList.get(item.getOwner().getId());
+        if (itemNewList != null) {
+            itemNewList.removeIf(i -> i.getId().equals(id));
+            if (itemNewList.isEmpty()) {
+                itemsList.remove(item.getOwner().getId());
+            }
+        }
     }
 
     @Override
@@ -80,8 +88,7 @@ public class InMemoryItemStorage implements ItemStorage {
                 .toList();
     }
 
-    @Override
-    public Long getNextId() {
+    private Long getNextId() {
         long currentMaxId = items.keySet()
                 .stream()
                 .mapToLong(id -> id)

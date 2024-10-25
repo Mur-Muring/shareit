@@ -2,6 +2,7 @@ package ru.practicum.shareit.user;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUser(Long id) {
-        return UserMapper.toDto(userStorage.getUser(id));
+        return UserMapper.toDto(userStorage.getUser(id).orElseThrow(() -> new NotFoundException("User not found")));
     }
 
     @Override

@@ -7,9 +7,6 @@ import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemRequest {

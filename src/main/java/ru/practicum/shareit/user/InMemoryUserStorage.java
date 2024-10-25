@@ -23,14 +23,15 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUser(Long id) {
-        return Optional.ofNullable(users.get(id)).orElseThrow(() -> new NotFoundException("User not found"));
+    public Optional<User> getUser(Long id) {
+        return Optional.ofNullable(users.get(id));
+
     }
 
     @Override
     public User createUser(User user) {
-        for (User user1 : users.values()) {
-            if (user.getEmail().equals(user1.getEmail())) {
+        for (User userNew : users.values()) {
+            if (user.getEmail().equals(userNew.getEmail())) {
                 throw new DuplicateDataException("This email is already in use");
             }
         }
@@ -41,26 +42,26 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User updateUser(User user, Long id) {
-        if (users.containsKey(id)) {
-            if (user.getEmail() != null) {
-                for (User user1 : users.values()) {
-                    if (user.getEmail().equals(user1.getEmail())) {
-                        if (!user1.getId().equals(id)) {
-                            throw new DuplicateDataException("This email is already in use");
-                        }
-                    }
+
+        if (!users.containsKey(id)) {
+            throw new NotFoundException("User not found");
+        }
+        User oldUser = users.get(id);
+
+        if (user.getEmail() != null && !user.getEmail().equals(oldUser.getEmail())) {
+            for (User existingUser : users.values()) {
+                if (user.getEmail().equals(existingUser.getEmail())) {
+                    throw new DuplicateDataException("This email is already in use");
                 }
             }
-            User oldUser = users.get(id);
-            if (user.getName() != null) {
-                oldUser.setName(user.getName());
-            }
-            if (user.getEmail() != null) {
-                oldUser.setEmail(user.getEmail());
-            }
-            return oldUser;
         }
-        throw new NotFoundException("User with id = " + id + " not found");
+        if (user.getName() != null) {
+            oldUser.setName(user.getName());
+        }
+        if (user.getEmail() != null) {
+            oldUser.setEmail(user.getEmail());
+        }
+        return oldUser;
     }
 
     @Override
@@ -68,6 +69,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (!users.containsKey(id)) {
             throw new NotFoundException("User with id = " + id + " not found");
         }
+
         users.remove(id);
     }
 

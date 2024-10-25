@@ -8,9 +8,6 @@ import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)

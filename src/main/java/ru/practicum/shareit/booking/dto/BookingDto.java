@@ -14,9 +14,6 @@ import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 
-/**
- * TODO Sprint add-bookings.
- */
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
