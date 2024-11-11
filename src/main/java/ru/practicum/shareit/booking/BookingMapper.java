@@ -9,8 +9,8 @@ public class BookingMapper {
         return BookingDto
                 .builder()
                 .id(booking.getId())
-                .startTime(booking.getStart())
-                .endTime(booking.getEnd())
+                .start(booking.getStart())
+                .end(booking.getEnd())
                 .itemId(booking.getItem().getId())
                 .item(booking.getItem())
                 .booker(booking.getBooker())
@@ -21,8 +21,8 @@ public class BookingMapper {
     public static Booking toBooking(BookingDto bookingDto, Item item, User user) {
         return Booking.builder()
                 .id(bookingDto.getId())
-                .start(bookingDto.getStartTime())
-                .end(bookingDto.getEndTime())
+                .start(bookingDto.getStart())
+                .end(bookingDto.getEnd())
                 .item(item)
                 .booker(user)
                 .build();
