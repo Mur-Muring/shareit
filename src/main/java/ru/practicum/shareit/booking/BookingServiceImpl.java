@@ -37,7 +37,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ConditionsNotMetException("Item with id " + bookingDto.getItemId() + " is not available");
         }
 
-        boolean hasOverlap = bookingRepository.existsByItemIdAndBookerIdAndEndIsBefore(item.getId(), userId, bookingDto.getEndTime());
+        boolean hasOverlap = bookingRepository.existsByItemIdAndBookerIdAndEndIsBefore(item.getId(), userId, bookingDto.getEnd());
         if (hasOverlap) {
             throw new ConditionsNotMetException("Reservation already exists");
         }
