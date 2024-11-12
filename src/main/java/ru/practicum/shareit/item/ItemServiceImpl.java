@@ -117,9 +117,9 @@ public class ItemServiceImpl implements ItemService {
 
     private LocalDateTime getLastBookingEnd(Long itemId) {
         LocalDateTime localDateTime = LocalDateTime.now().withSecond(0).withNano(0);
-        return bookingRepository.findFirstByItemIdAndEndBeforeOrderByEndDesc(itemId, localDateTime)
-                .map(Booking::getEnd)
+        Booking lastBooking = bookingRepository.findFirstByItemIdAndEndBeforeOrderByEndDesc(itemId, localDateTime)
                 .orElse(null);
+        return lastBooking != null ? lastBooking.getEnd() : null;
     }
 
     private LocalDateTime getNextBookingStart(Long itemId) {
