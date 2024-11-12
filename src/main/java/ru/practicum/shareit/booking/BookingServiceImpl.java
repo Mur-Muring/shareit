@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 import ru.practicum.shareit.exceptions.NotFoundException;
@@ -26,6 +27,7 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
+    @Transactional
     public BookingDto addBooking(BookingDto bookingDto, Long userId) {
         log.info("Add booking: {}", bookingDto);
         User user = getUserById(userId);
@@ -37,13 +39,12 @@ public class BookingServiceImpl implements BookingService {
             throw new ConditionsNotMetException("Item with id " + bookingDto.getItemId() + " is not available");
         }
 
-        boolean hasOverlap = bookingRepository.existsByItemIdAndBookerIdAndEndIsBefore(item.getId(), userId, bookingDto.getEnd());
+        boolean hasOverlap = bookingRepository.existsByItemIdAndEndAfterAndStartBefore(item.getId(), bookingDto.getStart(), bookingDto.getEnd());
         if (hasOverlap) {
             throw new ConditionsNotMetException("Reservation already exists");
         }
 
         Booking booking = BookingMapper.toBooking(bookingDto, item, user);
-        booking.setBooker(user);
         booking.setStatus(BookingStatus.WAITING);
 
         Booking savedBooking = bookingRepository.save(booking);
@@ -51,13 +52,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public BookingDto approveBooking(Long userId, Long bookingId, Boolean approved) throws NotOwnerException {
         log.info("approveBooking: bookingId={}, userId={}", bookingId, userId);
-        Booking booking = getBookingById(bookingId);
-
-        if (!booking.getItem().getOwner().getId().equals(userId)) {
-            throw new NotOwnerException("User is not owner of item");
-        }
+        Booking booking = bookingRepository.findByIdAndItemOwnerId(bookingId, userId)
+                .orElseThrow(() -> new NotOwnerException("User is not owner of item"));
 
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new ConditionsNotMetException("Reservation already exists");
@@ -71,6 +70,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BookingDto getById(Long userId, Long id) throws NotOwnerException {
         log.info("getById: userId={}, id={}", userId, id);
         Booking booking = getBookingById(id);
@@ -83,6 +83,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingDto> getAllBookingsByBooker(Long bookerId, String state) {
         log.info("getAllBookingsByBooker bookerId={}, state={}", bookerId, state);
         getUserById(bookerId);
@@ -104,6 +105,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingDto> getAllBookingsByOwner(Long ownerId, String state) {
         log.info("getAllBookingsByOwner ownerId={}, state={}", ownerId, state);
         getUserById(ownerId);
@@ -124,11 +126,13 @@ public class BookingServiceImpl implements BookingService {
         return bookings.stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
     }
 
+    @Transactional(readOnly = true)
     private Booking getBookingById(Long bookingId) {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Reservation with id " + bookingId + " not found"));
