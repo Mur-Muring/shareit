@@ -9,9 +9,6 @@ import ru.practicum.shareit.item.dto.ItemDtoShort;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)

@@ -1,6 +1,5 @@
 package ru.practicum.shareit.request;
 
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,18 +12,16 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @RestController
 @RequestMapping(path = "/requests")
 @AllArgsConstructor
 public class ItemRequestController {
-    ItemRequestService itemRequestService;
+
+    private ItemRequestService itemRequestService;
 
     @PostMapping
     public ItemRequestDto createRequest(@RequestHeader("X-Sharer-User-Id") long userId,
-                                        @Valid @RequestBody ItemRequestDto itemRequestDto) {
+                                         @RequestBody ItemRequestDto itemRequestDto) {
         return itemRequestService.createItemRequest(userId, itemRequestDto);
     }
 

@@ -10,9 +10,6 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Builder
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)

@@ -16,9 +16,6 @@ import ru.practicum.shareit.exceptions.NotOwnerException;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-bookings.
- */
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
